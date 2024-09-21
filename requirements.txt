@@ -1,0 +1,7 @@
+accelerate
+peft
+transformers
+trl
+datasets
+PyYAML
+pydantic_settings
