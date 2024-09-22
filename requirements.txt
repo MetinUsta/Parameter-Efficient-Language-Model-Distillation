@@ -5,3 +5,4 @@ trl
 datasets
 PyYAML
 pydantic_settings
+bitsandbytes

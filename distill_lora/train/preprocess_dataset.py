@@ -5,7 +5,7 @@ from distill_lora.utils.parse_configs import TrainConfig
 
 
 def process_conversation(sample, student_tokenizer):
-    conversation = sample["conversation"]
+    conversation = sample["conversations"]
     messages = []
 
     for msg in conversation:
@@ -18,14 +18,14 @@ def process_conversation(sample, student_tokenizer):
 
     text = student_tokenizer.apply_chat_template(messages, tokenize=False)
 
-    return text
+    return {"text": text}
 
 
 def tokenize_sample(sample, train_config, student_tokenizer):
     return student_tokenizer(
         sample["text"],
         truncation=True,
-        max_length=train_config.cutoff_len,
+        max_length=train_config.max_seq_length,
         padding="max_length",
     )
 

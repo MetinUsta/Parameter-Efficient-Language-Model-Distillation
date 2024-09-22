@@ -1,22 +1,22 @@
-teacher_model_path: ""
-student_model_path: ""
+teacher_model_path: "Qwen/Qwen2-1.5B-Instruct"
+student_model_path: "Qwen/Qwen2-0.5B-Instruct"
 
 teacher_quantization_bit: 4
 student_quantization_bit: 4
 
-wandb_project: "gemma2_9B_distill_qlora"
+wandb_project: qwen2-0.5b_distill_qlora
 
 lora_target: all
 lora_rank: 64
 lora_alpha: 32
 lora_dropout: 0.05
 
-dataset: distill_qlora
+dataset: mlabonne/FineTome-100k
 max_seq_length: 2048
 num_samples: 1000
 num_proc: 8
 
-output_dir: adapters/gemma2_9B_distill_qlora
+output_dir: adapters/qwen2-0.5b_distill_qlora
 logging_steps: 1
 save_steps: 500
 
@@ -25,9 +25,10 @@ gradient_accumulation_steps: 2
 learning_rate: 2.0e-5
 num_train_epochs: 1
 lr_scheduler_type: cosine
-warmup_ratio: 0.1
-bf16: true
-flash_attn: fa2
+warmup_ratio: 0.01
+fp16: true
+bf16: false
+flash_attn: eager
 resume_from_checkpoint: False
 
 val_size: 0.1

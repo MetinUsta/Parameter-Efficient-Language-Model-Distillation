@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from accelerate import Accelerator
 from peft import LoraConfig, PeftModel, prepare_model_for_kbit_training
-from transformers import AutoModel, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from trl import SFTConfig, SFTTrainer
 
 from distill_lora.utils.parse_configs import TrainConfig
@@ -36,19 +36,19 @@ def load_models(config: TrainConfig):
     else:
         attn_implementation = "eager"
 
-    teacher_model = AutoModel.from_pretrained(
+    teacher_model = AutoModelForCausalLM.from_pretrained(
         config.teacher_model_path,
         quantization_config=teacher_bnb_config,
         attn_implementation=attn_implementation,
     )
-    student_model = AutoModel.from_pretrained(
+    student_model = AutoModelForCausalLM.from_pretrained(
         config.student_model_path,
         quantization_config=student_bnb_config,
         attn_implementation=attn_implementation,
     )
 
     student_model = prepare_model_for_kbit_training(
-        student_model, use_gradient_checkpointing=True
+        student_model, use_gradient_checkpointing=True, gradient_checkpointing_kwargs={"use_reentrant": False}
     )
 
     return teacher_model, student_model
@@ -67,9 +67,12 @@ class LogitsTrainer(SFTTrainer):
             else self.teacher_model
         )
 
+        # labels = inputs.pop('labels', None)
+
         student_outputs = student_model(**inputs)
-        with torch.no_grad():
-            teacher_outputs = teacher_model(**inputs)
+        teacher_model.eval()
+        # with torch.no_grad():
+        teacher_outputs = teacher_model(**inputs)
 
         custom_loss = self.distillation_loss(
             student_outputs.logits, teacher_outputs.logits, inputs, student_outputs.loss
@@ -91,7 +94,7 @@ class LogitsTrainer(SFTTrainer):
                 reduction="batchmean",
             )
             * (self.distill_config.distillation_temperature**2)
-            / self.distill_config.cutoff_len
+            / self.distill_config.max_seq_length
         )
 
         return (
@@ -130,7 +133,6 @@ def train(config: TrainConfig, dataset):
         eval_dataset=dataset["test"],
         tokenizer=tokenizer,
         args=sft_config,
-        max_seq_length=config["tokenizer"]["max_length"],
         peft_config=peft_config,
     )
 

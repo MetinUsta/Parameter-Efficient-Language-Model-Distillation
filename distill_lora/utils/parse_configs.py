@@ -14,7 +14,7 @@ from pydantic_settings import BaseSettings
 # lora_alpha: 32
 
 # dataset: distill_qlora
-# cutoff_len: 2048
+# max_seq_length: 2048
 # num_samples: 1000
 
 # output_dir: adapters/gemma2_9B_distill_qlora
@@ -50,7 +50,7 @@ class TrainConfig(BaseSettings):
     lora_dropout: float = 0.05
 
     dataset: str = "distill_qlora"
-    cutoff_len: int = 2048
+    max_seq_length: int = 2048
     num_samples: int = None
     num_proc: int = 8
 
@@ -63,10 +63,11 @@ class TrainConfig(BaseSettings):
     learning_rate: float = 2.0e-5
     num_train_epochs: int = 1
     lr_scheduler_type: str = "cosine"
-    warmup_ratio: int = 100
+    warmup_ratio: float = 0.1
     bf16: bool = True
+    fp16: bool = False
     flash_attn: str = "fa2"
-    resume_from_checkpoint: bool = None
+    resume_from_checkpoint: bool = False
 
     val_size: float = 0.1
     per_device_eval_batch_size: int = 1
@@ -108,8 +109,10 @@ class TrainConfig(BaseSettings):
             "lr_scheduler_type": self.lr_scheduler_type,
             "warmup_ratio": self.warmup_ratio,
             "bf16": self.bf16,
+            "fp16": self.fp16,
             "per_device_eval_batch_size": self.per_device_eval_batch_size,
             "eval_strategy": self.eval_strategy,
             "eval_steps": self.eval_steps,
             "dataset_text_field": self.dataset_text_field,
+            "max_seq_length": self.max_seq_length,
         }
