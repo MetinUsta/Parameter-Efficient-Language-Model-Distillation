@@ -1,38 +1,8 @@
+from datetime import datetime
 from typing import Any, Dict
 
 import yaml
 from pydantic_settings import BaseSettings
-
-# yaml file content
-# teacher_model_path: ""
-# student_model_path: ""
-
-# quantization_bit: 4
-
-# lora_target: all
-# lora_rank: 64
-# lora_alpha: 32
-
-# dataset: distill_qlora
-# max_seq_length: 2048
-# num_samples: 1000
-
-# output_dir: adapters/gemma2_9B_distill_qlora
-# logging_steps: 1
-# save_steps: 500
-
-# per_device_train_batch_size: 1
-# gradient_accumulation_steps: 2
-# learning_rate: 2.0e-5
-# num_train_epochs: 1
-# lr_scheduler_type: cosine
-# warmup_ratio: 100
-# bf16: true
-
-# val_size: 0.1
-# per_device_eval_batch_size: 1
-# eval_strategy: steps
-# eval_steps: 500
 
 
 class TrainConfig(BaseSettings):
@@ -115,4 +85,5 @@ class TrainConfig(BaseSettings):
             "eval_steps": self.eval_steps,
             "dataset_text_field": self.dataset_text_field,
             "max_seq_length": self.max_seq_length,
+            "run_name": self.wandb_project + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"),
         }

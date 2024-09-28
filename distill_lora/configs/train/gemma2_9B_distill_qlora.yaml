@@ -4,7 +4,7 @@ student_model_path: ""
 teacher_quantization_bit: 4
 student_quantization_bit: 4
 
-wandb_project: "gemma2_9B_distill_qlora"
+wandb_project: gemma2_9B_distill_qlora
 
 lora_target: all
 lora_rank: 64

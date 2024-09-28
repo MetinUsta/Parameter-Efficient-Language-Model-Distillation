@@ -59,6 +59,19 @@ def load_models(config: TrainConfig):
 
 
 class LogitsTrainer(SFTTrainer):
+    def log(self, logs):
+        # Merge your custom logs with Trainer's logging mechanism
+        custom_losses = self.state.log_history[-(self.distill_config.gradient_accumulation_steps):]
+
+        # give index to each log
+        custom_losses = [{f"{k}_{i}": v for k, v in log.items()} for i, log in enumerate(custom_losses)]
+
+        # merge custom_losses
+        custom_losses = {k: v for log in custom_losses for k, v in log.items()}
+
+        logs = {**logs, **custom_losses}  # Merge logs dictionaries
+        super().log(logs)  # Use the existing Hugging Face logging mechanism
+
     def compute_loss(self, model, inputs, return_outputs=False):
         inputs = {
             k: v.to(model.device) if hasattr(v, "to") else v for k, v in inputs.items()
@@ -100,6 +113,15 @@ class LogitsTrainer(SFTTrainer):
             * (self.distill_config.distillation_temperature**2)
             / self.distill_config.max_seq_length
         )
+
+        logs = {
+            "loss_kd": loss_kd.item(),
+            "original_loss": original_loss.item(),
+        }
+
+        self.state.log_history.append(logs)
+
+        
 
         return (
             self.distill_config.distillation_alpha * loss_kd
