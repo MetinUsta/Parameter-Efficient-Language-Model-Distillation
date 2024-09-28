@@ -1,6 +1,10 @@
 import os
 import sys
 
+import wandb
+
+wandb.login(key=os.environ["WANDB_API_KEY"])
+
 # add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
